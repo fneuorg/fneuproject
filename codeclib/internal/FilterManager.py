@@ -171,7 +171,16 @@ class FilterManager:
 
         except:
             return False, "WARNING: Could not change line {} of {}".format(line_result.line_number, line_result.filename)
-    
+
+    @staticmethod
+    def file_name_ends_in(file_name,
+    ending):
+        n = len(ending)
+        ends_in = (file_name[-1*n:] == ending)
+
+
+        return ends_in
+
     @staticmethod
     def show_whitespace(line_string, tab_width=4, color=None):
         result = str()
