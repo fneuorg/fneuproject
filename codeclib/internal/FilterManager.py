@@ -23,6 +23,7 @@ from queue import Empty
 from codeclib.fillib.results import ResultContainer
 import webbrowser
 
+
 class FilterManager:
 
     @staticmethod
@@ -36,7 +37,8 @@ class FilterManager:
         try:
             for subdir in os.listdir(dir):
                 if os.path.isdir(os.path.join(dir, subdir)):
-                    dir_list.extend(FilterManager.get_sub_dirs(os.path.join(dir, subdir)))
+                    dir_list.extend(FilterManager.get_sub_dirs(
+                        os.path.join(dir, subdir)))
         except PermissionError:
             print("{} is not accessible and will be ignored!".format(dir))
             return None
@@ -68,16 +70,16 @@ class FilterManager:
                     abspaths.append(item)
                 else:
                     if setting.import_history == ['cmdline'] or setting.import_history == ['default']:
-                        abspaths.append(os.path.join(os.getcwd(),item))
+                        abspaths.append(os.path.join(os.getcwd(), item))
                     else:
-                        abspaths.append(os.path.join(os.path.dirname(os.path.abspath(setting.import_history[-1])),item))
+                        abspaths.append(os.path.join(os.path.dirname(
+                            os.path.abspath(setting.import_history[-1])), item))
             return abspaths
         else:
             return[]
 
     @staticmethod
     def filter_process(settings, file_name_queue, global_filter_class_queue, local_filter_class_list, file_dict, result_queue):
-
         """This is the method that actually runs on the processes
 
         :param settings: Settings object
@@ -91,7 +93,8 @@ class FilterManager:
         while something_to_do:
             try:  # run a local filter
                 file_name = file_name_queue.get_nowait()
-                file_results = ResultContainer.ResultContainer(file_name, settings, type='file')
+                file_results = ResultContainer.ResultContainer(
+                    file_name, settings, type='file')
 
                 for filter_class in local_filter_class_list:
                     filter = filter_class(settings)
@@ -117,7 +120,8 @@ class FilterManager:
         assert(type(choices_number) == type(2))
         assert(choices_number > 0)
         while True:
-            user_input = input("Please enter the numbers of changes to apply ('y'=all, 'n'=none, 'e'=edit manually): ")
+            user_input = input(
+                "Please enter the numbers of changes to apply ('y'=all, 'n'=none, 'e'=edit manually): ")
             if user_input.lower().strip() in ['y']:
                 return [i+1 for i in range(choices_number)]
             elif user_input.lower().strip() in ['n']:
@@ -126,8 +130,9 @@ class FilterManager:
                 return ['EDIT']
             else:
                 try:
-                    choices_list=[]
-                    user_input_list = re.sub(' +',' ',user_input.strip().replace(',',' ')).split(' ')
+                    choices_list = []
+                    user_input_list = re.sub(
+                        ' +', ' ', user_input.strip().replace(',', ' ')).split(' ')
                     for item in user_input_list:
                         if item.isdigit():
                             assert(0 < int(item) <= choices_number)
@@ -154,7 +159,8 @@ class FilterManager:
                 return False, "WARNING: Could not read {}".format(line_result.filename)
 
             try:
-                assert(line_list[line_result.line_number-1] == line_result.original)
+                assert(line_list[line_result.line_number-1]
+                       == line_result.original)
             except:
                 return False, "WARNING: Line {} of {} is different than expected".format(line_result.line_number, line_result.filename)
 
@@ -171,7 +177,16 @@ class FilterManager:
 
         except:
             return False, "WARNING: Could not change line {} of {}".format(line_result.line_number, line_result.filename)
-    
+
+    @staticmethod
+    def file_name_ends_in(file_name,
+    ending):
+        n = len(ending)
+        ends_in = (file_name[-1*n:] == ending)
+
+
+        return ends_in
+
     @staticmethod
     def show_whitespace(line_string, tab_width=4, color=None):
         result = str()
@@ -204,15 +219,16 @@ class FilterManager:
 
         default_global_dir = os.path.abspath(os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0],
-            "../globalfilters")) #always codec/codeclib/globalfilters
+            "../globalfilters"))  # always codec/codeclib/globalfilters
 
         default_local_dir = os.path.abspath(os.path.join(
             os.path.split(inspect.getfile(inspect.currentframe()))[0],
-            "../localfilters")) #always codec/codeclib/globalfilters
+            "../localfilters"))  # always codec/codeclib/globalfilters
 
         filter_dirs.extend([default_global_dir, default_local_dir])
 
-        included_filter_dirs = FilterManager.get_abspaths_from_setting(self.settings['includedfilterdirectories'])
+        included_filter_dirs = FilterManager.get_abspaths_from_setting(
+            self.settings['includedfilterdirectories'])
         filter_dirs.extend(included_filter_dirs)
 
         for dir in filter_dirs:
@@ -220,7 +236,6 @@ class FilterManager:
                 filter_dirs.remove(dir)
 
         return filter_dirs
-
 
     def get_filters(self):
 
@@ -280,8 +295,9 @@ class FilterManager:
                     elif object.kind() == 2:
                         global_filters.append(object)
                     else:
-                        print("Warning: Module '{}' is of a weird .kind(): {}".format(name, object.kind()))
-                        #TODO: proper warning
+                        print("Warning: Module '{}' is of a weird .kind(): {}".format(
+                            name, object.kind()))
+                        # TODO: proper warning
 
         return [local_filters, global_filters]
 
@@ -289,10 +305,12 @@ class FilterManager:
 
         target_dirs = []
         target_files = []
-        blacklist = FilterManager.get_abspaths_from_setting(self.settings['ignoreddirectories'])
-        target_directories = FilterManager.get_abspaths_from_setting(self.settings['targetdirectories'])
-        flat_directories = FilterManager.get_abspaths_from_setting(self.settings['flatdirectories'])
-
+        blacklist = FilterManager.get_abspaths_from_setting(
+            self.settings['ignoreddirectories'])
+        target_directories = FilterManager.get_abspaths_from_setting(
+            self.settings['targetdirectories'])
+        flat_directories = FilterManager.get_abspaths_from_setting(
+            self.settings['flatdirectories'])
 
         for item in target_directories:
             if os.path.isfile(item) and item not in blacklist:
@@ -349,9 +367,7 @@ class FilterManager:
             else:
                 targets = target_files
 
-
         return targets
-
 
     def get_needed_keys(self):
 
@@ -359,18 +375,20 @@ class FilterManager:
         needed_keys_dict_dict_list = []
 
         for filterclass in filterclass_list:
-            filter_answer = {filterclass.__name__: filterclass.get_needed_settings()}
+            filter_answer = {
+                filterclass.__name__: filterclass.get_needed_settings()}
             try:
-                assert(type(filter_answer[filterclass.__name__]) == type(dict()))
+                assert(
+                    type(filter_answer[filterclass.__name__]) == type(dict()))
                 needed_keys_dict_dict_list.append(filter_answer)
             except AssertionError:
-                print("Warning: expected instance of type {} from {} for needed settings, got instance of type {}!"\
+                print("Warning: expected instance of type {} from {} for needed settings, got instance of type {}!"
                       .format(type(dict()), filterclass.__name__, type(filter_answer[filterclass.__name__])))
         return needed_keys_dict_dict_list
 
     def run_processes(self):
 
-        process_count = self.settings['jobcount'].to_int(index = 0)
+        process_count = self.settings['jobcount'].to_int(index=0)
         if process_count == 0:
             process_count = multiprocessing.cpu_count()
         ProcessManager = multiprocessing.Manager()
@@ -379,12 +397,12 @@ class FilterManager:
         file_name_queue = ProcessManager.Queue()
         for file_name in self.targets:
             try:
-                with open(file_name,'r') as file:
+                with open(file_name, 'r') as file:
                     file_dict[file.name] = file.readlines()
                     file_name_queue.put(file.name)
             except:
                 print("WARNING: can't open file:", file_name)
-                #TODO: ince warning/log
+                # TODO: ince warning/log
 
         global_filter_class_queue = ProcessManager.Queue()
         for global_filter_class in self.global_filters:
@@ -406,14 +424,15 @@ class FilterManager:
         processes_done = 0
         while processes_done < process_count:
             try:
-                result = result_queue.get(timeout = 0.3)
+                result = result_queue.get(timeout=0.3)
                 if not result:
                     continue
                 if result == 'DONE':
                     processes_done += 1
                 else:
                     if self.settings['hidefinefiles'].to_bool(0):
-                        if result: print(result)
+                        if result:
+                            print(result)
                     else:
                         print(result)
                     self.process_changes(result)
@@ -422,7 +441,7 @@ class FilterManager:
 
     def process_changes(self, result):
         possible_changes = result.get_replacement_line_results()
-        actual_changes=[]
+        actual_changes = []
 
         if self.settings['applychanges'].value[0] == 'NO':
             return None
@@ -431,22 +450,29 @@ class FilterManager:
                 print("The following changes can be applied automagically:")
                 for i in range(len(possible_changes)):
                     if result.type == 'file':
-                        print("({}):\tline {}:".format(i+1, possible_changes[i].line_number))
+                        print("({}):\tline {}:".format(
+                            i+1, possible_changes[i].line_number))
                         print("\tfrom:\t{}".format(FilterManager.show_whitespace(possible_changes[i].original,
-                              self.settings.get_int_setting('tabwidth'),
-                              self.settings.get_color_setting('nonprintablecharscolor'))))
+                                                                                 self.settings.get_int_setting(
+                                                                                     'tabwidth'),
+                                                                                 self.settings.get_color_setting('nonprintablecharscolor'))))
                         print("\tto:\t{}".format(FilterManager.show_whitespace(possible_changes[i].replacement,
-                              self.settings.get_int_setting('tabwidth'),
-                              self.settings.get_color_setting('nonprintablecharscolor'))))
+                                                                               self.settings.get_int_setting(
+                                                                                   'tabwidth'),
+                                                                               self.settings.get_color_setting('nonprintablecharscolor'))))
                     else:
-                        print("({}):\tline {} in file {}:".format(i+1, possible_changes[i].line_number, ResultContainer.ResultContainer.fixed_length(possible_changes[i].filename,60)))
+                        print("({}):\tline {} in file {}:".format(i+1, possible_changes[
+                              i].line_number, ResultContainer.ResultContainer.fixed_length(possible_changes[i].filename, 60)))
                         print("\tfrom:\t{}".format(FilterManager.show_whitespace(possible_changes[i].original,
-                              self.settings.get_int_setting('tabwidth'),
-                              self.settings.get_color_setting('nonprintablecharscolor'))))
+                                                                                 self.settings.get_int_setting(
+                                                                                     'tabwidth'),
+                                                                                 self.settings.get_color_setting('nonprintablecharscolor'))))
                         print("\tto:\t{}".format(FilterManager.show_whitespace(possible_changes[i].replacement,
-                              self.settings.get_int_setting('tabwidth'),
-                              self.settings.get_color_setting('nonprintablecharscolor'))))
-                actual_changes = FilterManager.get_changes_answer(len(possible_changes))
+                                                                               self.settings.get_int_setting(
+                                                                                   'tabwidth'),
+                                                                               self.settings.get_color_setting('nonprintablecharscolor'))))
+                actual_changes = FilterManager.get_changes_answer(
+                    len(possible_changes))
                 if actual_changes == ['EDIT']:
                     actual_changes = []
 
@@ -460,16 +486,13 @@ class FilterManager:
         elif self.settings['applychanges'].value[0] == 'YES':
             actual_changes = [i for i in range(1, len(possible_changes)+1)]
         else:
-            print("WARNING: settings['applychanges'].value[0] not in ('YES','NO','ASK'):", self.settings['applychanges'].value[0])
+            print("WARNING: settings['applychanges'].value[0] not in ('YES','NO','ASK'):", self.settings[
+                  'applychanges'].value[0])
 
         # let's do it
         for i0 in reversed(range(len(possible_changes))):
-            i1 = i0+1 # human_readable index
+            i1 = i0+1  # human_readable index
             if i1 in actual_changes:
                 success, msg = FilterManager.do_change(possible_changes[i0])
                 if not success:
                     print(msg)
-
-
-
-
