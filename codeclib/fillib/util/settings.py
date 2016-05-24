@@ -27,7 +27,7 @@ class Settings(OrderedDict):
         stripped = original.strip()
 
         lst = stripped.split(',')
-        if len(lst) > 1:
+        if len(lst) > 1:    
             new_list = []
             for elem in lst:
                 new_list.append(Settings.__make_value(elem)[0])
